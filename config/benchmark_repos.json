@@ -1,0 +1,16 @@
+{
+  "repos": [
+    "geekgeekrun/geekgeekrun",
+    "loks666/get_jobs",
+    "ufownl/auto-zhipin"
+  ],
+  "active_days": 60,
+  "weights": {
+    "feature_coverage": 20,
+    "stability": 20,
+    "rhythm_control": 15,
+    "ai_strategy": 15,
+    "configurability": 15,
+    "observability": 15
+  }
+}
