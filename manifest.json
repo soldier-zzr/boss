@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "BOSS 自动打招呼",
+  "version": "1.1.0",
+  "description": "招聘端自动筛选简历并打招呼",
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": [
+    "*://*.zhipin.com/*",
+    "http://api.zhixiangyuanda.cn:8080/*",
+    "https://api.github.com/*",
+    "https://open.feishu.cn/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.zhipin.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "BOSS 自动打招呼"
+  }
+}
