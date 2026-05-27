@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 360px; font-family: -apple-system, sans-serif; font-size: 13px; color: #222; background: #f7f8fa; }
+    .header { background: #00b96b; color: white; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 15px; }
+    .section { background: #fff; border-top: 1px solid #eee; padding: 10px 14px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .stat { background: #f0faf5; border-radius: 6px; padding: 6px; text-align: center; }
+    .stat-num { font-size: 16px; color: #00b96b; font-weight: 700; }
+    .stat-label { font-size: 10px; color: #777; }
+    .row { display: flex; gap: 8px; margin-top: 8px; }
+    .btn { flex: 1; border: 0; border-radius: 6px; padding: 8px; font-weight: 600; cursor: pointer; }
+    .btn-start { background: #00b96b; color: #fff; }
+    .btn-stop { background: #ff4d4f; color: #fff; }
+    .btn-discover { background: #1677ff; color: #fff; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-lite { background: #fff; border: 1px solid #ddd; color: #333; }
+    .status { font-size: 12px; color: #666; margin-top: 6px; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .running { background: #00b96b; }
+    .stopped { background: #999; }
+    .kv { font-size: 11px; color: #555; line-height: 1.6; }
+    .hidden { display: none; }
+    textarea, input, select { width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 6px; font-size: 12px; }
+    textarea { min-height: 120px; resize: vertical; }
+    .log { height: 180px; overflow-y: auto; background: #fff; border-top: 1px solid #eee; padding: 8px 14px; }
+    .line { font-size: 11px; line-height: 1.5; border-bottom: 1px solid #f5f5f5; padding: 2px 0; color: #555; }
+    .success { color: #00a65a; }
+    .error { color: #e53935; }
+    .hint { font-size: 11px; color: #888; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>BOSS 自动打招呼</h1>
+    <span id="version">v2.0</span>
+  </div>
+
+  <div class="section">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num" id="today-greet">0</div><div class="stat-label">今日打招呼</div></div>
+      <div class="stat"><div class="stat-num" id="today-view">0</div><div class="stat-label">今日看简历</div></div>
+      <div class="stat"><div class="stat-num" id="ai-rate">0%</div><div class="stat-label">AI成功率</div></div>
+      <div class="stat"><div class="stat-num" id="avg-latency">0ms</div><div class="stat-label">平均时延</div></div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-start" id="btn-start">▶ 开始</button>
+      <button class="btn btn-stop" id="btn-stop" disabled>■ 停止</button>
+      <button class="btn btn-discover" id="btn-discover">🔍 探测</button>
+    </div>
+
+    <div class="status"><span class="dot stopped" id="status-dot"></span><span id="status-text">就绪</span></div>
+
+    <div class="row">
+      <button class="btn btn-lite" id="btn-mode">切换到真实模式</button>
+      <button class="btn btn-lite" id="btn-panel-template">模板中心</button>
+      <button class="btn btn-lite" id="btn-panel-api">API设置</button>
+      <button class="btn btn-lite" id="btn-panel-chat">聊天/飞书</button>
+    </div>
+  </div>
+
+  <div class="section hidden" id="panel-template">
+    <div class="kv">岗位模板中心</div>
+    <select id="template-select"></select>
+    <input id="template-name" placeholder="模板名称，如：教育行业-投放岗" style="margin-top:6px" />
+    <input id="template-version" type="number" min="1" step="1" value="1" style="margin-top:6px" />
+    <textarea id="template-text" style="margin-top:6px"></textarea>
+    <div class="hint">必须包含 {{resume_text}} 占位符。</div>
+    <div class="row">
+      <button class="btn btn-lite" id="tpl-new">新建</button>
+      <button class="btn btn-lite" id="tpl-save">保存</button>
+      <button class="btn btn-lite" id="tpl-use">设为当前</button>
+    </div>
+  </div>
+
+  <div class="section hidden" id="panel-api">
+    <div class="kv">API 与限频配置</div>
+    <input id="api-endpoint" placeholder="Endpoint" />
+    <input id="api-model" placeholder="主模型" style="margin-top:6px" />
+    <input id="api-fallback" placeholder="备用模型，用逗号分隔" style="margin-top:6px" />
+    <input id="api-timeout" type="number" min="2000" step="1000" placeholder="超时(ms)" style="margin-top:6px" />
+    <input id="api-token" placeholder="API Token" type="password" style="margin-top:6px" />
+    <div class="row">
+      <button class="btn btn-lite" id="api-token-show">显示/隐藏Token</button>
+      <button class="btn btn-lite" id="api-save">保存API</button>
+      <button class="btn btn-lite" id="api-rotate-hint">轮换提示</button>
+    </div>
+  </div>
+
+  <div class="section hidden" id="panel-chat">
+    <div class="kv">自动聊天与飞书入库</div>
+    <label class="kv"><input type="checkbox" id="chat-enabled" /> 启用自动聊天</label>
+    <label class="kv"><input type="checkbox" id="chat-ask-resume" /> 自动索取简历</label>
+    <label class="kv"><input type="checkbox" id="chat-ask-wechat" /> 自动询问微信</label>
+    <label class="kv"><input type="checkbox" id="chat-manual-wechat" /> 微信前人工确认（推荐）</label>
+    <input id="chat-wait" type="number" min="500" step="100" placeholder="打招呼后等待(ms)" style="margin-top:6px" />
+    <textarea id="chat-tpl-resume" placeholder="索取简历话术" style="margin-top:6px;min-height:70px"></textarea>
+    <textarea id="chat-tpl-wechat" placeholder="索取微信话术" style="margin-top:6px;min-height:70px"></textarea>
+    <textarea id="chat-tpl-ack" placeholder="收到微信确认话术" style="margin-top:6px;min-height:70px"></textarea>
+
+    <div class="kv" style="margin-top:6px">飞书配置</div>
+    <label class="kv"><input type="checkbox" id="feishu-enabled" /> 启用飞书入库</label>
+    <select id="feishu-mode" style="margin-top:6px">
+      <option value="bitable">多维表格(Bitable)</option>
+      <option value="webhook">机器人Webhook</option>
+    </select>
+    <input id="feishu-webhook" placeholder="Webhook URL（mode=webhook）" style="margin-top:6px" />
+    <input id="feishu-app-id" placeholder="App ID（mode=bitable）" style="margin-top:6px" />
+    <input id="feishu-app-secret" placeholder="App Secret（mode=bitable）" style="margin-top:6px" />
+    <input id="feishu-app-token" placeholder="App Token（mode=bitable）" style="margin-top:6px" />
+    <input id="feishu-table-id" placeholder="Table ID（mode=bitable）" style="margin-top:6px" />
+    <div class="row">
+      <button class="btn btn-lite" id="chat-save">保存聊天/飞书</button>
+    </div>
+  </div>
+
+  <div class="log" id="log-area"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
