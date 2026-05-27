@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-05-27T06:18:56.160Z",
+  "active_days": 60,
+  "summary": "活跃仓库 1/3（阈值 60 天）",
+  "repos": [
+    {
+      "repo": "geekgeekrun/geekgeekrun",
+      "ok": true,
+      "active": true,
+      "pushed_at": "2026-05-13T15:37:23Z",
+      "stars": 1947,
+      "open_issues": 32
+    },
+    {
+      "repo": "loks666/get_jobs",
+      "ok": true,
+      "active": false,
+      "pushed_at": "2026-01-30T14:54:33Z",
+      "stars": 7062,
+      "open_issues": 15
+    },
+    {
+      "repo": "ufownl/auto-zhipin",
+      "ok": true,
+      "active": false,
+      "pushed_at": "2025-07-25T09:09:59Z",
+      "stars": 21,
+      "open_issues": 1
+    }
+  ],
+  "active_repos": [
+    "geekgeekrun/geekgeekrun"
+  ],
+  "score_matrix": {
+    "feature_coverage": 82,
+    "stability": 80,
+    "rhythm_control": 85,
+    "ai_strategy": 78,
+    "configurability": 88,
+    "observability": 84
+  },
+  "main_capabilities": [
+    "AI筛选",
+    "可配置模板",
+    "安全节奏"
+  ]
+}
